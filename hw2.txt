@@ -10,4 +10,4 @@ AuthorizedKeysFile     .ssh/authorized_keys
 #с помошью scp id_rsa.pub user@ip_ssh_server:~/.ssh/authorized_keys
 #перезапускаем сервер sshd
 sudo systemctl restart sshd
-
+#Содержимое ключа id_rsa.pub копипуем на настройки аккаунта github
