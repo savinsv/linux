@@ -1,0 +1,41 @@
+Создаем каталог /tmp/lesson3/permissions
+Каталог создан
+Создаем файл test.txt с текстовым содержимым
+test.txt успешно создан
+Создаем жесткую ссылку test_hl.txt на файл test.txt
+Создаем символическую ссылку test_sl.txt на файл test.txt
+Создаем символическую ссылку в каталоге /tmp/lesson3 на файл-символическую ссылку /tmp/lesson3/permissions/test_sl.txt
+
+Содержимое файла test.txt
+С праздником Великой Победы над фашизмом!!!!
+
+Содержимое файла test_hl.txt
+С праздником Великой Победы над фашизмом!!!!
+
+Содержимое файла test_sl.txt
+С праздником Великой Победы над фашизмом!!!!
+
+Содержимое файла test_sl2.txt
+С праздником Великой Победы над фашизмом!!!!
+
+Иноды файлов test*
+281474977207994 -rw-rw-rw- 2 gvido gvido 80 май 11 13:01 /tmp/lesson3/permissions/test_hl.txt
+281474977207995 lrwxrwxrwx 1 gvido gvido 33 май 11 13:01 /tmp/lesson3/permissions/test_sl.txt -> /tmp/lesson3/permissions/test.txt
+281474977207994 -rw-rw-rw- 2 gvido gvido 80 май 11 13:01 /tmp/lesson3/permissions/test.txt
+281474977207996 lrwxrwxrwx 1 gvido gvido 36 май 11 13:01 /tmp/lesson3/test_sl2.txt -> /tmp/lesson3/permissions/test_sl.txt
+Иноды файла test.txt и файла жесткой ссылки test_hl.txt совпадают, так как указывают на тот же блок данных на диске. Иноды файлов символических ссылок отличаются, так как укзавают на файл, а не на данные
+
+Переносим файлы ссылок из каталога /tmp/lesson3/permissions в каталог /tmp
+Вывод содержимого перемещенных файлов ссылок в каталог/tmp
+С праздником Великой Победы над фашизмом!!!!
+С праздником Великой Победы над фашизмом!!!!
+
+Перемещение ссылок в другое расположение не разррывает связь с данными на которые они ссылаются, если источник не меняет своего места расположения
+Переместив файл ссылку test_sl.txt, мы разорвали ее связь с ссылкой test_sl2.txt
+
+Иноды файлов с учетом текущего размещения
+281474977207994 -rw-rw-rw- 2 gvido gvido 80 май 11 13:01 /tmp/lesson3/permissions/test.txt
+281474977207996 lrwxrwxrwx 1 gvido gvido 36 май 11 13:01 /tmp/lesson3/test_sl2.txt -> /tmp/lesson3/permissions/test_sl.txt
+281474977207994 -rw-rw-rw- 2 gvido gvido 80 май 11 13:01 /tmp/test_hl.txt
+281474977207995 lrwxrwxrwx 1 gvido gvido 33 май 11 13:01 /tmp/test_sl.txt -> /tmp/lesson3/permissions/test.txt
+Удаление созданных скриптом каталогов и файлов
