@@ -13,13 +13,13 @@ else
         while [ $# -gt 0 ] ; do
                 case $1 in
                         -e)
-                        exp=$2
                         shift
+                        exp=$1
                         shift
                         ;;
                         -i)
-                        input=$2
                         shift
+                        input=$1
                         shift
                         ;;
                 esac
