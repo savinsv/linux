@@ -1,0 +1,154 @@
+#ДЗ 7
+
+#Задание 1-2
+
+#Настраиваем firewall(Желательно вводить правила iptables напрямую в консоли убунту. Иначе любой "лаг" и применится часть правил. Так как первыми идут DROP, можно потерять доступ к удаленной машине.):
+
+sudo -i
+# Правила по умолчанию
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+iptables -P OUTPUT ACCEPT
+# Разрешить входящие соединения с локалхоста
+iptables -A INPUT -i lo -j ACCEPT
+# Разрешить уже установленные входящие соединения
+iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+# Разрешить SSH
+iptables -A INPUT -p TCP --dport 22 -j ACCEPT
+# Разрешить HTTP и HTTPS порт
+iptables -A INPUT -p TCP --dport 80 -j ACCEPT
+iptables -A INPUT -p TCP --dport 443 -j ACCEPT
+
+#
+#Проверяем подгружены ли правила
+sudo iptables -L -n
+#Вывод получим приблизительно такой:
+
+Chain INPUT (policy DROP)
+target     prot opt source               destination
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:22
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:80
+ACCEPT     tcp  --  0.0.0.0/0            0.0.0.0/0            tcp dpt:443
+
+Chain FORWARD (policy DROP)
+target     prot opt source               destination
+
+Chain OUTPUT (policy ACCEPT)
+target     prot opt source               destination
+
+#Чтобы правила сохранялись при перезагрузке сохраняем загруженные правила
+sudo sh -c "iptables-save > /etc/iptables.rules"
+
+#Чтобы правила подгружались при старте системы и сохранялись при перезагрузке обновленные правила, создаем скрипты на загрузку и сохранение:
+/etc/network/if-pre-up.d/iptablesload
+`
+#!/bin/sh
+ iptables-restore < /etc/iptables.rules
+exit 0
+`
+ 
+# и
+/etc/network/if-post-down.d/iptablessave 
+
+`
+#!/bin/sh
+iptables-save -c > /etc/iptables.rules
+if [ -f /etc/iptables.downrules ]; then
+   iptables-restore < /etc/iptables.downrules
+fi
+exit 0
+`
+#Делаем исполняемым
+sudo chmod +x /etc/network/if-post-down.d/iptablessave
+sudo chmod +x /etc/network/if-pre-up.d/iptablesload
+
+
+#Установка nginx
+
+sudo apt update
+sudo apt install ngnix -y
+
+#создаем в каталоге папку ssl в каталоге /etc/nginx
+#создаем самоподписанный сертификат
+sudo openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/nginx/ssl/private/nginx-selfsigned.key -out /etc/nginx/ssl/certs/nginx-selfsigned.crt
+#Заменяем файл конфигурации по умолчанию, на более простую:
+/etc/nginx/sites-enabled/default
+
+server{
+        listen 80;
+        server_name ubt18;
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen 443 ssl;
+        server_name ubt18_ssl;
+        ssl_certificate /etc/nginx/ssl/certs/nginx-selfsigned.crt;
+        ssl_certificate_key /etc/nginx/ssl/private/nginx-selfsigned.key;
+
+        root /var/www/html;
+
+        location / {
+          if ($http_user = 'Marcus'){
+                return 200 "Hi $http_user";
+          }
+                return 404 "Page not found";
+
+        }
+
+        location /adm {
+          return 200 "HTTP this is adm page of $server_name...";
+        }
+
+}
+
+#Проверяем
+nginx -t
+
+#Если нет ошибок рестартуем
+sudo systemctl restart nginx
+
+#Проверяем действие headrs
+curl -L -k http://109.167.229.73 -D - -H "user: God" или curl -L -k http://109.167.229.73 -D - 
+
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.14.0 (Ubuntu)
+Date: Fri, 29 May 2020 10:45:55 GMT
+Content-Type: text/html
+Content-Length: 194
+Connection: keep-alive
+Location: https://109.167.229.73/
+
+HTTP/1.1 404 Not Found
+Server: nginx/1.14.0 (Ubuntu)
+Date: Fri, 29 May 2020 10:45:55 GMT
+Content-Type: application/octet-stream
+Content-Length: 14
+Connection: keep-alive
+
+# Если шлем нужный header
+
+curl -L -k http://109.167.229.73 -D - -H "user: Marcus"
+
+HTTP/1.1 301 Moved Permanently
+Server: nginx/1.14.0 (Ubuntu)
+Date: Fri, 29 May 2020 10:46:07 GMT
+Content-Type: text/html
+Content-Length: 194
+Connection: keep-alive
+Location: https://109.167.229.73/
+
+HTTP/1.1 200 OK
+Server: nginx/1.14.0 (Ubuntu)
+Date: Fri, 29 May 2020 10:46:07 GMT
+Content-Type: application/octet-stream
+Content-Length: 9
+Connection: keep-alive
+
+
+
+
+#Самоподписанный сертификат может быть сформирован с самым жесткими параметрами, но кому он принадлежит проверить нельзя.
+#Для такой проверки и создано несколько центров сертификации, которые могут выдавать, проверять и подтверждать подлинность ключей.
