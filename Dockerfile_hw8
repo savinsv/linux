@@ -1,0 +1,21 @@
+FROM python:alpine
+
+WORKDIR /opt/django-test-app
+
+COPY requirements.txt /tmp/requirements.txt
+
+RUN pip install -Ur /tmp/requirements.txt
+
+RUN rm -rf /tmp/requirements.txt
+
+COPY ./demo /opt/django-test-app/demo/
+
+COPY ./polls /opt/django-test-app/polls/
+
+COPY db.sqlite3 /opt/django-test-app/
+
+COPY manage.py /opt/django-test-app/
+
+RUN python /opt/django-test-app/manage.py migrate --noinput
+
+CMD ["python", "/opt/django-test-app/manage.py", "runserver", "0.0.0.0:8000"]

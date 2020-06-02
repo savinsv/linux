@@ -1,0 +1,22 @@
+Ответы на ДЗ 8
+
+1. Dockerfile_hw8
+
+2. В файле Dokerfile_w8 добавлена команда:
+
+RUN python /opt/django-test-app/manage.py migrate --noinput
+
+3. В файле /etc/hosts добавляем соответствие ip имени ubuntu
+/etc/hosts
+127.0.0.1       localhost
+127.0.1.1       ubuntu
+109.167.229.73  ubuntu
+172.17.0.1	ubuntu
+
+Запускаем контейнер:
+docker run -ti -p 80:8000 myapp:latest
+
+
+4. Залил собранный образ на dockerhub:
+
+docker pull savinsv/myapp:latest
